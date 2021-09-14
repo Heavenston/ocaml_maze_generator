@@ -4,10 +4,13 @@ open Bigarray
 (* Module Containing every maze specific type, values and methods *)
 module Maze = struct
     (* Definitions for the 8-Bit cell bitfield *)
+    
     (** Bit defined if the bottom wall of the cell is present *)
     let bottom_wall_bit = 0b00000001
+
     (** Bit defined if the right wall of the cell is present *)
     and right_wall_bit  = 0b00000010
+
     (** Bit defined if the cell has been visited by the generation cursor *)
     and visited_bit     = 0b00000100
 
@@ -165,11 +168,37 @@ module Maze = struct
 
 end
 
+
 let _ = 
     let open Bimage_unix in
 
-    let maze = Maze.v 100 100 in
+    Clap.description "Maze generator writter in OCalm";
+    
+    let width = Clap.default_int
+        ~long: "width"
+        ~short: 'w' 
+        100
+    in
+    let height = Clap.default_int
+        ~long: "height"
+        ~short: 'h'
+        100 
+    in
+
+    if width < 5 then
+        Clap.error "Width must be higher then 5";
+    if height < 5 then
+        Clap.error "Height must be higher then 5";
+
+    let output_file = Clap.default_string
+        ~placeholder: "OUTPUT FILE"
+        "maze.png"
+    in
+
+    Clap.close ();
+
+    let maze = Maze.v width height in
     Maze.generate_maze maze;
     let image = Maze.image_of_maze maze in 
     
-    Magick.write "output.png" image;
+    Magick.write output_file image;
