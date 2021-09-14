@@ -11,14 +11,15 @@ It uses the "randomized depth-first"  algorithm, more info on it on [wikipedia](
     maze_generator.exe --help
 
 ## How to compile
-### Compile
-Make sure you have `opam` and `dune` installed and setup, then go inside this project directory and run:
+Make sure you have `opam` and `dune` installed and setup, then install all the depdencies:
+
+    dune install bimage bimage-io bimage-unix clap
+
+then go inside this project directory and run:
 	
 	dune build
 	
-This will create the executable on `_build/default/maze_generator.exe`
-### Run
-If you want to directly run the program, type:
+This will create the executable on `_build/default/maze_generator.exe`, if you want to directly run the program, type:
 
     dune exec ./maze_generator.exe -- [(--width|-w) <VALUE>] [(--height|-h) <VALUE>] [<OUTPUT>]
 
