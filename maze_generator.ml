@@ -29,16 +29,16 @@ module Maze = struct
     let is_direction_possible maze (x, y) dir =
         let (ax, ay) = apply_direction (x, y) dir in
 
-        ax >= maze.width
-            && ay >= maze.height
-            && ax < 0
-            && ay < 0
+        ax < maze.width
+            && ay < maze.height
+            && ax >= 0
+            && ay >= 0
             && (maze.data.{ax, ay} land visited_bit) = 0
 
     let get_possible_directions maze pos =
         List.filter (is_direction_possible maze pos) [Right; Bottom; Left; Top]
 
-    let generat_maze maze =
+    let generate_maze maze = begin
         Random.self_init ();
 
         let visit_cell_and_break_wall (cx, cy) dir =
@@ -55,6 +55,10 @@ module Maze = struct
 
         let rec gen_step cursor_pos tail =
             let possible_directions = get_possible_directions maze cursor_pos in
+            (
+                let (cx, cy) = cursor_pos in
+                    maze.data.{cx, cy} <- maze.data.{cx, cy} lor visited_bit
+            );
 
             match possible_directions with
                 | [] -> (
@@ -70,13 +74,46 @@ module Maze = struct
                     gen_step new_cursor (new_cursor :: tail)
                 end
 
-        in gen_step (0, 0) []
-end;;
+        in gen_step (0, 0) [];
+    end
 
+    let image_of_maze maze = begin
+        let open Bimage in
+
+        let image = Image.v u8 rgb (1 + maze.width * 2) (1 + maze.height * 2) in
+
+        let set_pixel x y color = Image.set_pixel image x y (Pixel.v Color.rgb color) in
+        let set_pixel_black x y = set_pixel x y [0.; 0.; 0.] in
+        
+        Image.for_each (fun x y _ -> set_pixel x y [1.; 1.; 1.]) image;
+
+        set_pixel_black 0 0;
+        for x = 0 to (maze.width - 1) do
+            set_pixel_black (x * 2 + 1) 0;
+            set_pixel_black (x * 2 + 2) 0;
+            for y = 0 to (maze.height - 1) do
+                set_pixel_black 0 (y * 2 + 1);
+                set_pixel_black 0 (y * 2 + 2);
+
+                set_pixel_black (x * 2 + 2) (y * 2 + 2);
+                if maze.data.{x, y} land right_wall_bit <> 0 then
+                    set_pixel_black (x * 2 + 2) (y * 2 + 1);
+                if maze.data.{x, y} land bottom_wall_bit <> 0 then
+                    set_pixel_black (x * 2 + 1) (y * 2 + 2);
+            done
+        done;
+
+        image
+    end
+
+end
 
 let _ = 
-    let _ = Maze.v 500 500 in
+    let open Bimage_unix in
 
-
-
-    ()
+    let maze = Maze.v 100 100 in
+    Maze.generate_maze maze;
+    let image = Maze.image_of_maze maze in 
+    
+    
+    Magick.write "output.png" image;
