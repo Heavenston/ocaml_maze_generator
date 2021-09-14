@@ -1,0 +1,4 @@
+(executable
+ (name maze_generator)
+ (libraries bimage bimage-io bimage-unix)
+)
