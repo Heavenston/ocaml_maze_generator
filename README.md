@@ -8,7 +8,7 @@ It uses the "randomized depth-first"  algorithm, more info on it on [wikipedia](
 
 ## Usage
 
-	maze_generator.exe [<width> <height>] [output path]
+    maze_generator.exe --help
 
 ## How to compile
 ### Compile
@@ -20,5 +20,5 @@ This will create the executable on `_build/default/maze_generator.exe`
 ### Run
 If you want to directly run the program, type:
 
-    dune exec ./maze_generator.exe [<width> <height>] [output path]
+    dune exec ./maze_generator.exe -- [(--width|-w) <VALUE>] [(--height|-h) <VALUE>] [<OUTPUT>]
 
