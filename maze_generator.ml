@@ -60,9 +60,6 @@ module Maze = struct
 
     (** Generate the maze with the cursor starting a (0, 0) *)
     let generate_maze maze = begin
-        (* Randomize the RNG (because why not) *)
-        Random.self_init ();
-
         (* Untility function to make the cursor move by removing the wall in its passage *)
         let move_cursor (cx, cy) dir =
             let (ax, ay) = apply_direction (cx, cy) dir in
@@ -184,6 +181,11 @@ let _ =
         ~short: 'h'
         100 
     in
+    let seed = Clap.optional_int
+        ~long: "seed"
+        ~short: 's'
+        ()
+    in
 
     if width < 5 then
         Clap.error "Width must be higher then 5";
@@ -197,8 +199,21 @@ let _ =
 
     Clap.close ();
 
+    if Option.is_some seed then (
+        Random.init (Option.get seed);
+    ) else
+        Random.self_init ();
+
     let maze = Maze.v width height in
     Maze.generate_maze maze;
     let image = Maze.image_of_maze maze in 
     
     Magick.write output_file image;
+
+
+
+
+
+
+
+
