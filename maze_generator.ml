@@ -169,7 +169,7 @@ end
 let _ = 
     let open Bimage_unix in
 
-    Clap.description "Maze generator writter in OCalm";
+    Clap.description "Maze generator written in OCalm";
     
     let width = Clap.default_int
         ~long: "width"
