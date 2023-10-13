@@ -120,7 +120,7 @@ module Maze = struct
                     gen_step new_cursor (new_cursor :: tail)
                 end
 
-        (* Start the iteration with an empty tail and cursor a (0, 0) *)
+        (* Start the iteration with an empty tail and cursor at (0, 0) *)
         in gen_step (0, 0) [];
     end
 
