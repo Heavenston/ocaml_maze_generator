@@ -30,7 +30,8 @@ module Maze = struct
         {
             width = width;
             height = height;
-            data = Array2.init Int8_unsigned c_layout width height (fun _ _ -> bottom_wall_bit lor right_wall_bit)
+            data = Array2.init Int8_unsigned c_layout width height
+                   (fun _ _ -> bottom_wall_bit lor right_wall_bit)
         }
 
     (** Applies a direction to a position tuple *)
@@ -40,8 +41,10 @@ module Maze = struct
         | Left   -> (x - 1, y)
         | Top    -> (x, y - 1)
 
-    (** Returns true if the movement of direction from position in the maze is possible for the generation cursor
-        i.e. True if the destination position is contained inside the maze and isn't visited
+    (** Returns true if the movement of direction from position in the maze is
+        possible for the generation cursor
+        i.e. True if the destination position is contained inside the maze
+        and isn't visited
      *)
     let is_direction_possible maze (x, y) dir =
         let (ax, ay) = apply_direction (x, y) dir in
@@ -53,21 +56,27 @@ module Maze = struct
             (* The cell bitfield must not be already visited *)
             && (maze.data.{ax, ay} land visited_bit) = 0
 
-    (** Return a list of possible all possible direction the cursor can take (based on [is_direction_possible] *)
+    (** Return a list of possible all possible direction the cursor can take
+        (based on [is_direction_possible] *)
     let get_possible_directions maze pos =
         (* filter the list of all directions with is_direction_possible *)
         List.filter (is_direction_possible maze pos) [Right; Bottom; Left; Top]
 
     (** Generate the maze with the cursor starting a (0, 0) *)
     let generate_maze maze = begin
-        (* Untility function to make the cursor move by removing the wall in its passage *)
+        (* Untility function to make the cursor move by removing the wall in
+           its passage *)
         let move_cursor (cx, cy) dir =
             let (ax, ay) = apply_direction (cx, cy) dir in
             (match dir with
-                | Right  -> maze.data.{cx, cy} <- maze.data.{cx, cy} land (lnot right_wall_bit)
-                | Bottom -> maze.data.{cx, cy} <- maze.data.{cx, cy} land (lnot bottom_wall_bit)
-                | Left   -> maze.data.{ax, ay} <- maze.data.{ax, ay} land (lnot right_wall_bit)
-                | Top    -> maze.data.{ax, ay} <- maze.data.{ax, ay} land (lnot bottom_wall_bit)
+                | Right  -> maze.data.{cx, cy} <- maze.data.{cx, cy}
+                    land (lnot right_wall_bit)
+                | Bottom -> maze.data.{cx, cy} <- maze.data.{cx, cy}
+                    land (lnot bottom_wall_bit)
+                | Left   -> maze.data.{ax, ay} <- maze.data.{ax, ay}
+                    land (lnot right_wall_bit)
+                | Top    -> maze.data.{ax, ay} <- maze.data.{ax, ay}
+                    land (lnot bottom_wall_bit)
             );
 
             (ax, ay)
@@ -76,7 +85,8 @@ module Maze = struct
         (*
             Recursive function for looping until the generation is finished
             cursor_pos is the cursor current postion
-            tail       is a List containing all previous position the cursor was for backtracing
+            tail       is a List containing all previous position the cursor
+                       was for backtracing
         *)
         let rec gen_step cursor_pos tail =
             (* Mark the cursor current position as visited *)
@@ -90,21 +100,23 @@ module Maze = struct
                 (* If no movement is possible *)
                 | [] -> (
                     match tail with
-                    (* And no backtracing (tail is empty) is possible either then stop the generation *)
+                    (* And no backtracing (tail is empty) is possible either
+                       then stop the generation *)
                     | [] -> ()
-                    (*
-                        If backtracing possible, take the last position from the tail
-                        and continue generation from there
-                    *)
+                    (* If backtracing possible, take the last position from
+                       the tail and continue generation from there *)
                     | new_pos :: tail -> gen_step new_pos tail
                 )
                 (* If movement is possible *)
                 | possible_directions -> begin
                     (* Choose randomly a direction from the list *)
-                    let dir = List.nth possible_directions (Random.int (List.length possible_directions)) in
+                    let dir = List.nth possible_directions (Random.int
+                        (List.length possible_directions)
+                    ) in
                     (* And move the cursor *)
                     let new_cursor = move_cursor cursor_pos dir in
-                    (* And continue generation, with the new position added to the tail *)
+                    (* And continue generation, with the new position added
+                       to the tail *)
                     gen_step new_cursor (new_cursor :: tail)
                 end
 
@@ -112,7 +124,8 @@ module Maze = struct
         in gen_step (0, 0) [];
     end
 
-    (** Convert the maze into a black and white image (white for traversable, black for a wall) *)
+    (** Convert the maze into a black and white image (white for traversable,
+        black for a wall) *)
     let image_of_maze maze = begin
         (* Open the image library for clarity *)
         let open Bimage in
@@ -129,7 +142,9 @@ module Maze = struct
         let image = Image.v u8 rgb (1 + maze.width * 2) (1 + maze.height * 2) in
 
         (* Shortcut functions *)
-        let set_pixel x y color = Image.set_pixel image x y (Pixel.v Color.rgb color) in
+        let set_pixel x y color = Image.set_pixel
+            image x y (Pixel.v Color.rgb color)
+        in
         let set_pixel_black x y = set_pixel x y [0.; 0.; 0.] in
         
         (* Setting all pixels to white *)
@@ -141,7 +156,8 @@ module Maze = struct
         for x = 0 to (maze.width - 1) do
             (* 
                Using the loop to set the top and left border of the image
-               Because the cells aren't using these, they would be left white which we don't want
+               Because the cells aren't using these, they would be left white
+               which we don't want
             *)
             set_pixel_black (x * 2 + 1) 0;
             set_pixel_black (x * 2 + 2) 0;
@@ -152,7 +168,8 @@ module Maze = struct
 
                 (* Setting the cell corner wall to black *)
                 set_pixel_black (x * 2 + 2) (y * 2 + 2);
-                (* Checking right and bottom wall for conditionally settings the pixels *)
+                (* Checking right and bottom wall for conditionally settings
+                   the pixels *)
                 if maze.data.{x, y} land right_wall_bit <> 0 then
                     set_pixel_black (x * 2 + 2) (y * 2 + 1);
                 if maze.data.{x, y} land bottom_wall_bit <> 0 then
@@ -175,13 +192,11 @@ let _ =
         ~long: "width"
         ~short: 'w' 
         100
-    in
-    let height = Clap.default_int
+    and height = Clap.default_int
         ~long: "height"
         ~short: 'h'
         100 
-    in
-    let seed = Clap.optional_int
+    and seed = Clap.optional_int
         ~long: "seed"
         ~short: 's'
         ()
@@ -209,11 +224,3 @@ let _ =
     let image = Maze.image_of_maze maze in 
     
     Magick.write output_file image;
-
-
-
-
-
-
-
-
