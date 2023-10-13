@@ -69,14 +69,14 @@ module Maze = struct
         let move_cursor (cx, cy) dir =
             let (ax, ay) = apply_direction (cx, cy) dir in
             (match dir with
-                | Right  -> maze.data.{cx, cy} <- maze.data.{cx, cy}
-                    land (lnot right_wall_bit)
-                | Bottom -> maze.data.{cx, cy} <- maze.data.{cx, cy}
-                    land (lnot bottom_wall_bit)
-                | Left   -> maze.data.{ax, ay} <- maze.data.{ax, ay}
-                    land (lnot right_wall_bit)
-                | Top    -> maze.data.{ax, ay} <- maze.data.{ax, ay}
-                    land (lnot bottom_wall_bit)
+                | Right  -> maze.data.{cx, cy} <-
+                    maze.data.{cx, cy} land (lnot right_wall_bit)
+                | Bottom -> maze.data.{cx, cy} <-
+                    maze.data.{cx, cy} land (lnot bottom_wall_bit)
+                | Left   -> maze.data.{ax, ay} <-
+                    maze.data.{ax, ay} land (lnot right_wall_bit)
+                | Top    -> maze.data.{ax, ay} <-
+                    maze.data.{ax, ay} land (lnot bottom_wall_bit)
             );
 
             (ax, ay)
